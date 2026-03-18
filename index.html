@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Mix Daily</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #121213;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      padding: 18px 0 10px;
+      border-bottom: 1px solid #3a3a3c;
+    }
+
+    header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #fff; }
+    header p { font-size: 0.8rem; color: #6a6a6c; margin-top: 4px; }
+
+    .game-container {
+      width: 100%; max-width: 480px; padding: 20px 16px;
+      display: flex; flex-direction: column; gap: 20px; flex: 1;
+    }
+
+    /* ---- DIFFICULTY SELECTOR ---- */
+    .difficulty-section { text-align: center; }
+
+    .difficulty-section h2 {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 3px;
+      color: #6a6a6c; margin-bottom: 12px;
+    }
+
+    .diff-buttons { display: flex; gap: 8px; justify-content: center; }
+
+    .diff-btn {
+      flex: 1; padding: 12px 0; border: 2px solid #3a3a3c; border-radius: 10px;
+      background: #2a2a2c; color: #888; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s ease; text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .diff-btn:hover { background: #3a3a3c; color: #ccc; }
+
+    .diff-btn.active {
+      background: linear-gradient(135deg, #6c5ce7, #a855f7);
+      border-color: #a855f7; color: #fff;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+    }
+
+    .diff-desc {
+      margin-top: 8px; font-size: 0.7rem; color: #5a5a5c;
+      min-height: 1.2em;
+    }
+
+    /* ---- TARGET CARD ---- */
+    .target-section { text-align: center; }
+
+    .target-section h2 {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 3px;
+      color: #6a6a6c; margin-bottom: 12px;
+    }
+
+    .target-card {
+      background: #1e1e20; border: 1px solid #3a3a3c;
+      border-radius: 14px; padding: 20px; perspective: 800px;
+    }
+
+    .target-card-inner { transform-style: preserve-3d; }
+
+    .target-card-inner.revealed {
+      animation: flipReveal 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes flipReveal {
+      0%   { transform: rotateX(0deg); }
+      50%  { transform: rotateX(90deg); }
+      100% { transform: rotateX(0deg); }
+    }
+
+    .target-color-block {
+      width: 100%; height: 90px; border-radius: 10px;
+      border: 2px solid #3a3a3c; transition: box-shadow 0.6s ease;
+    }
+
+    .target-card.glow .target-color-block {
+      box-shadow: 0 0 30px 8px rgba(255, 255, 255, 0.15);
+    }
+
+    .target-values {
+      margin-top: 12px; font-size: 1.2rem; font-weight: 700;
+      letter-spacing: 4px; font-family: 'Courier New', monospace; color: #fff;
+    }
+
+    /* ---- GUESS ROWS ---- */
+    .guess-rows { display: flex; flex-direction: column; gap: 12px; }
+
+    .guess-row {
+      background: #1e1e20; border: 1px solid #2a2a2c;
+      border-radius: 14px; overflow: hidden; transition: all 0.3s ease;
+    }
+
+    .guess-row.waiting { border-style: dashed; border-color: #2a2a2c; }
+    .guess-row.active  { border-color: #4a4a4c; border-style: solid; }
+    .guess-row.done    { border-color: #3a3a3c; border-style: solid; }
+    .guess-row.win     { border-color: #538d4e; box-shadow: 0 0 20px rgba(83, 141, 78, 0.35); }
+
+    .row-waiting-label {
+      display: flex; align-items: center; justify-content: center;
+      height: 50px; font-size: 0.8rem; font-weight: 600;
+      color: #3a3a3c; letter-spacing: 1px;
+    }
+
+    /* ---- CONTROLS ---- */
+    .row-controls { padding: 16px; }
+
+    .picker-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+
+    .picker-color-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; width: 14px; flex-shrink: 0;
+    }
+
+    .picker-color-label.red   { color: #e74c3c; }
+    .picker-color-label.yellow { color: #f1c40f; }
+    .picker-color-label.blue   { color: #3498db; }
+
+    .picker-buttons { display: flex; gap: 5px; flex: 1; }
+
+    .picker-btn {
+      flex: 1; padding: 10px 0; border: 2px solid #3a3a3c; border-radius: 8px;
+      background: #2a2a2c; color: #888; font-size: 1rem; font-weight: 700;
+      font-family: 'Courier New', monospace; cursor: pointer; transition: all 0.12s ease;
+    }
+
+    .picker-btn:hover { background: #3a3a3c; color: #ccc; }
+
+    .picker-btn.selected { color: #fff; transform: scale(1.08); }
+    .picker-btn.filled   { color: #ccc; }
+
+    .picker-group.grp-red .picker-btn.selected    { background: #c0392b; border-color: #e74c3c; box-shadow: 0 0 10px rgba(231,76,60,0.35); }
+    .picker-group.grp-red .picker-btn.filled       { background: rgba(192,57,43,0.35); border-color: rgba(231,76,60,0.5); }
+    .picker-group.grp-yellow .picker-btn.selected  { background: #b8960a; border-color: #f1c40f; box-shadow: 0 0 10px rgba(241,196,15,0.35); }
+    .picker-group.grp-yellow .picker-btn.filled     { background: rgba(184,150,10,0.35); border-color: rgba(241,196,15,0.5); }
+    .picker-group.grp-blue .picker-btn.selected    { background: #2471a3; border-color: #3498db; box-shadow: 0 0 10px rgba(52,152,219,0.35); }
+    .picker-group.grp-blue .picker-btn.filled       { background: rgba(36,113,163,0.35); border-color: rgba(52,152,219,0.5); }
+
+    .submit-btn {
+      width: 100%; margin-top: 6px; padding: 14px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #6c5ce7, #a855f7); color: #fff;
+      font-size: 0.9rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 3px; cursor: pointer; transition: all 0.2s ease;
+    }
+
+    .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,0.4); }
+    .submit-btn:active { transform: translateY(0); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); } 40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); } 80% { transform: translateX(4px); }
+    }
+
+    /* ---- MIXING CANVAS ---- */
+    .mix-area { display: none; width: 100%; height: 100px; position: relative; }
+    .mix-area.active { display: flex; }
+
+    .mix-canvas-wrap {
+      width: 50%; height: 100%; position: relative; overflow: hidden;
+    }
+
+    .mix-canvas-wrap canvas {
+      width: 100%; height: 100%; display: block;
+    }
+
+    .mix-target-side {
+      width: 50%; height: 100%;
+      border-left: 2px solid rgba(255,255,255,0.12);
+    }
+
+    /* ---- RESULT VIEW ---- */
+    .result-compare { display: none; width: 100%; height: 80px; }
+    .result-compare.visible { display: flex; animation: fadeIn 0.4s ease; }
+
+    .result-half { flex: 1; height: 100%; }
+    .result-half.guess-side { border-right: 2px solid rgba(255,255,255,0.12); }
+
+    .result-labels { display: none; justify-content: space-around; padding: 3px 0; background: rgba(0,0,0,0.3); }
+    .result-labels.visible { display: flex; }
+    .result-labels span { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: #5a5a5c; flex: 1; text-align: center; }
+
+    .result-info { display: none; padding: 10px 16px; }
+    .result-info.visible { display: flex; animation: fadeIn 0.3s ease; }
+    .result-info .result-values { display: flex; gap: 10px; flex: 1; justify-content: center; }
+
+    .result-chip {
+      display: flex; align-items: center; gap: 4px; font-size: 0.85rem;
+      font-weight: 600; font-family: 'Courier New', monospace;
+      padding: 4px 10px; border-radius: 6px; background: #2a2a2c; color: #aaa;
+    }
+
+    .result-chip .chip-label { font-size: 0.65rem; opacity: 0.6; text-transform: uppercase; }
+
+    .result-chip.correct {
+      background: #2d5a2e; color: #6fcf6f; border: 1px solid #538d4e;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ---- ENDGAME ---- */
+    #answerSection { animation: fadeSlideIn 0.5s ease-out; }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .play-again-btn {
+      padding: 14px 36px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #6c5ce7, #a855f7); color: #fff;
+      font-size: 0.95rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 2px; cursor: pointer; transition: all 0.2s ease;
+    }
+
+    .play-again-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,0.4); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Color Mix Daily</h1>
+    <p>Match the target color by mixing Red, Yellow &amp; Blue paint</p>
+  </header>
+
+  <div class="game-container">
+    <!-- DIFFICULTY -->
+    <section class="difficulty-section" id="diffSection">
+      <h2>Difficulty</h2>
+      <div class="diff-buttons">
+        <button class="diff-btn active" data-diff="easy">Easy</button>
+        <button class="diff-btn" data-diff="medium">Medium</button>
+        <button class="diff-btn" data-diff="hard">Hard</button>
+      </div>
+      <div class="diff-desc" id="diffDesc">0–3 per color, correct values highlighted</div>
+    </section>
+
+    <!-- TARGET -->
+    <section class="target-section">
+      <h2>Target Color</h2>
+      <div class="target-card" id="targetCard">
+        <div class="target-card-inner" id="targetCardInner">
+          <div class="target-color-block" id="targetColorBlock"></div>
+          <div class="target-values" id="targetValues">? &mdash; ? &mdash; ?</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="guess-rows" id="guessRows"></section>
+
+    <section id="answerSection" style="display:none">
+      <div class="guess-row done" id="answerRow" style="border-color:#3a3a3c;">
+        <div class="result-compare visible" id="answerCompare">
+          <div class="result-half guess-side" id="answerColorSide"></div>
+          <div class="result-half target-side" id="answerTargetSide"></div>
+        </div>
+        <div class="result-labels visible">
+          <span>Answer</span><span>Target</span>
+        </div>
+        <div class="result-info visible" id="answerInfo">
+          <div class="result-values">
+            <span class="result-chip"><span class="chip-label">R</span> <span id="ansRV-r">-</span></span>
+            <span class="result-chip"><span class="chip-label">Y</span> <span id="ansRV-y">-</span></span>
+            <span class="result-chip"><span class="chip-label">B</span> <span id="ansRV-b">-</span></span>
+          </div>
+        </div>
+      </div>
+      <div id="endMessage" style="text-align:center; margin-top:14px;"></div>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="play-again-btn" id="playAgainBtn">Play Again</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const CORNERS = {
+      white:[255,255,255], red:[255,0,0], yellow:[255,255,0], blue:[0,0,255],
+      orange:[255,128,0], green:[0,255,0], purple:[128,0,128], black:[0,0,0],
+    };
+
+    function rybToRgb(r, y, b) {
+      const rn=r/5, yn=y/5, bn=b/5, c=CORNERS;
+      function interp(i) {
+        return (
+          c.white[i]*(1-rn)*(1-yn)*(1-bn) + c.red[i]*rn*(1-yn)*(1-bn) +
+          c.yellow[i]*(1-rn)*yn*(1-bn) + c.blue[i]*(1-rn)*(1-yn)*bn +
+          c.orange[i]*rn*yn*(1-bn) + c.green[i]*(1-rn)*yn*bn +
+          c.purple[i]*rn*(1-yn)*bn + c.black[i]*rn*yn*bn
+        );
+      }
+      return [Math.round(interp(0)), Math.round(interp(1)), Math.round(interp(2))];
+    }
+
+    function rgb(c) { return `rgb(${c[0]},${c[1]},${c[2]})`; }
+
+    // Paint colors for the canvas animation
+    const PAINT_RGB = {
+      r: [214, 48, 49],
+      y: [249, 202, 36],
+      b: [46, 134, 222],
+    };
+
+    // ========== DIFFICULTY ==========
+    const DIFF_CONFIG = {
+      easy:   { max: 3, feedback: true,  desc: '0\u20133 per color, correct values highlighted' },
+      medium: { max: 5, feedback: true,  desc: '0\u20135 per color, correct values highlighted' },
+      hard:   { max: 5, feedback: false, desc: '0\u20135 per color, no feedback' },
+    };
+
+    let difficulty = 'easy';
+
+    // Generate a target that is always a mix (at least 2 non-zero channels, each >= 1)
+    function generateMixTarget(max) {
+      let r, y, b;
+      do {
+        r = Math.floor(Math.random() * (max + 1));
+        y = Math.floor(Math.random() * (max + 1));
+        b = Math.floor(Math.random() * (max + 1));
+      } while ([r, y, b].filter(v => v > 0).length < 2);
+      return { r, y, b };
+    }
+
+    // Pre-generate one target per difficulty on page load
+    // Each difficulty gets its own color, stable across switches
+    const dailyTargets = {
+      easy:   generateMixTarget(DIFF_CONFIG.easy.max),
+      medium: generateMixTarget(DIFF_CONFIG.medium.max),
+      hard:   generateMixTarget(DIFF_CONFIG.hard.max),
+    };
+
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        difficulty = btn.dataset.diff;
+        document.getElementById('diffDesc').textContent = DIFF_CONFIG[difficulty].desc;
+        initGame();
+      });
+    });
+
+    // ========== STATE ==========
+    const MAX_GUESSES = 3;
+    let targetR, targetY, targetB, targetRgb;
+    let guessCount = 0;
+    let gameOver = false;
+    let animating = false;
+    let lastGuess = null;
+
+    function maxVal() { return DIFF_CONFIG[difficulty].max; }
+    function hasFeedback() { return DIFF_CONFIG[difficulty].feedback; }
+
+    function normalizeForRyb(val) {
+      return (val / maxVal()) * 5;
+    }
+
+    // ========== BUILD ROW ==========
+    function buildPickerButtons(max) {
+      let html = '';
+      for (let i = 0; i <= max; i++) {
+        html += `<button class="picker-btn" data-value="${i}">${i}</button>`;
+      }
+      return html;
+    }
+
+    function buildRowHTML(index) {
+      const max = maxVal();
+      return `
+        <div class="guess-row waiting" id="row-${index}">
+          <div class="row-waiting-label">Guess ${index + 1}</div>
+          <div class="row-controls" style="display:none">
+            <div class="picker-group grp-red">
+              <span class="picker-color-label red">R</span>
+              <div class="picker-buttons" data-channel="r">${buildPickerButtons(max)}</div>
+            </div>
+            <div class="picker-group grp-yellow">
+              <span class="picker-color-label yellow">Y</span>
+              <div class="picker-buttons" data-channel="y">${buildPickerButtons(max)}</div>
+            </div>
+            <div class="picker-group grp-blue">
+              <span class="picker-color-label blue">B</span>
+              <div class="picker-buttons" data-channel="b">${buildPickerButtons(max)}</div>
+            </div>
+            <button class="submit-btn">Mix It</button>
+          </div>
+
+          <div class="mix-area" id="mix-${index}">
+            <div class="mix-canvas-wrap"><canvas id="canvas-${index}"></canvas></div>
+            <div class="mix-target-side"></div>
+          </div>
+
+          <div class="result-compare" id="compare-${index}">
+            <div class="result-half guess-side"></div>
+            <div class="result-half target-side"></div>
+          </div>
+          <div class="result-labels" id="labels-${index}">
+            <span>Your Mix</span><span>Target</span>
+          </div>
+          <div class="result-info" id="info-${index}">
+            <div class="result-values">
+              <span class="result-chip" data-chip="r"><span class="chip-label">R</span> <span data-rv="r">-</span></span>
+              <span class="result-chip" data-chip="y"><span class="chip-label">Y</span> <span data-rv="y">-</span></span>
+              <span class="result-chip" data-chip="b"><span class="chip-label">B</span> <span data-rv="b">-</span></span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ========== ACTIVATE ROW ==========
+    function activateRow(index) {
+      const row = document.getElementById(`row-${index}`);
+      row.className = 'guess-row active';
+      row.querySelector('.row-waiting-label').style.display = 'none';
+      row.querySelector('.row-controls').style.display = 'block';
+
+      const selected = { r: null, y: null, b: null };
+
+      function highlightUpTo(group, val) {
+        group.querySelectorAll('.picker-btn').forEach(b => {
+          b.classList.remove('selected', 'filled');
+          const v = parseInt(b.dataset.value);
+          if (v < val) b.classList.add('filled');
+          else if (v === val) b.classList.add('selected');
+        });
+      }
+
+      if (lastGuess) {
+        Object.keys(lastGuess).forEach(ch => {
+          const val = lastGuess[ch];
+          selected[ch] = val;
+          const group = row.querySelector(`.picker-buttons[data-channel="${ch}"]`);
+          highlightUpTo(group, val);
+        });
+      }
+
+      row.querySelectorAll('.picker-buttons').forEach(group => {
+        const ch = group.dataset.channel;
+        group.querySelectorAll('.picker-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (gameOver || animating) return;
+            const val = parseInt(btn.dataset.value);
+            selected[ch] = val;
+            highlightUpTo(group, val);
+          });
+        });
+      });
+
+      row.querySelector('.submit-btn').addEventListener('click', () => {
+        if (selected.r === null || selected.y === null || selected.b === null) {
+          const btn = row.querySelector('.submit-btn');
+          btn.style.animation = 'none';
+          btn.offsetHeight;
+          btn.style.animation = 'shake 0.4s ease';
+          return;
+        }
+        submitGuess(index, selected.r, selected.y, selected.b);
+      });
+    }
+
+    // ========== PAINT ANIMATION ==========
+    function animatePaint(canvasEl, r, y, b, guessRgb, callback) {
+      const wrap = canvasEl.parentElement;
+      const W = wrap.clientWidth;
+      const H = wrap.clientHeight;
+      canvasEl.width = W;
+      canvasEl.height = H;
+      const ctx = canvasEl.getContext('2d');
+
+      // Normalized amounts (0-1)
+      const amounts = [
+        { color: PAINT_RGB.r, amt: r / maxVal() },
+        { color: PAINT_RGB.y, amt: y / maxVal() },
+        { color: PAINT_RGB.b, amt: b / maxVal() },
+      ];
+
+      // Paint each color as a sequence of brush strokes
+      const strokeDuration = 350;
+      const pauseBetween = 100;
+      let currentColor = 0;
+
+      // Accumulated color via alpha compositing on a buffer
+      const buffer = ctx.createImageData(W, H);
+      // Start with white
+      for (let i = 0; i < buffer.data.length; i += 4) {
+        buffer.data[i] = 30; buffer.data[i+1] = 30;
+        buffer.data[i+2] = 32; buffer.data[i+3] = 255;
+      }
+
+      function paintColor(colorIdx) {
+        if (colorIdx >= 3) {
+          // Final blend to result
+          setTimeout(() => {
+            const startTime = performance.now();
+            const blendDur = 400;
+            function blendFrame(now) {
+              const t = Math.min((now - startTime) / blendDur, 1);
+              const ease = t * t * (3 - 2 * t); // smoothstep
+              ctx.putImageData(buffer, 0, 0);
+              ctx.globalAlpha = ease;
+              ctx.fillStyle = rgb(guessRgb);
+              ctx.fillRect(0, 0, W, H);
+              ctx.globalAlpha = 1;
+              if (t < 1) requestAnimationFrame(blendFrame);
+              else callback();
+            }
+            requestAnimationFrame(blendFrame);
+          }, 150);
+          return;
+        }
+
+        const { color, amt } = amounts[colorIdx];
+        if (amt === 0) {
+          // Skip this color
+          setTimeout(() => paintColor(colorIdx + 1), 80);
+          return;
+        }
+
+        const numStrokes = Math.ceil(amt * 4);
+        const alpha = 0.3 + amt * 0.5;
+        let stroke = 0;
+        const startTime = performance.now();
+        const perStroke = strokeDuration / numStrokes;
+
+        function strokeFrame(now) {
+          const elapsed = now - startTime;
+          const targetStroke = Math.min(Math.floor(elapsed / perStroke), numStrokes);
+
+          while (stroke < targetStroke) {
+            // Draw a brush stroke
+            ctx.save();
+            const yOff = (stroke / numStrokes) * H * 0.6 + H * 0.15;
+            const height = H * (0.2 + amt * 0.25);
+
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = `rgb(${color[0]},${color[1]},${color[2]})`;
+
+            // Brush stroke shape
+            ctx.beginPath();
+            ctx.moveTo(-10, yOff - height/2);
+            ctx.quadraticCurveTo(W * 0.3, yOff - height/2 - 5, W * 0.7, yOff - height/3);
+            ctx.quadraticCurveTo(W * 0.9, yOff - height/4, W + 10, yOff);
+            ctx.lineTo(W + 10, yOff + height/4);
+            ctx.quadraticCurveTo(W * 0.8, yOff + height/3, W * 0.5, yOff + height/2);
+            ctx.quadraticCurveTo(W * 0.2, yOff + height/2 + 5, -10, yOff + height/3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            stroke++;
+          }
+
+          if (stroke < numStrokes) {
+            requestAnimationFrame(strokeFrame);
+          } else {
+            // Update buffer
+            const imgData = ctx.getImageData(0, 0, W, H);
+            buffer.data.set(imgData.data);
+            setTimeout(() => paintColor(colorIdx + 1), pauseBetween);
+          }
+        }
+
+        requestAnimationFrame(strokeFrame);
+      }
+
+      // Clear and start
+      ctx.fillStyle = '#1a1a1b';
+      ctx.fillRect(0, 0, W, H);
+      paintColor(0);
+    }
+
+    // ========== SUBMIT ==========
+    function submitGuess(index, r, y, b) {
+      if (gameOver || animating) return;
+      animating = true;
+      lastGuess = { r, y, b };
+
+      const row = document.getElementById(`row-${index}`);
+      // Map to 0-5 range for RYB conversion
+      const rNorm = normalizeForRyb(r);
+      const yNorm = normalizeForRyb(y);
+      const bNorm = normalizeForRyb(b);
+      const guessRgb = rybToRgb(rNorm, yNorm, bNorm);
+
+      row.querySelector('.row-controls').style.display = 'none';
+
+      const mixArea = document.getElementById(`mix-${index}`);
+      mixArea.classList.add('active');
+      mixArea.querySelector('.mix-target-side').style.backgroundColor = rgb(targetRgb);
+
+      const canvas = document.getElementById(`canvas-${index}`);
+
+      animatePaint(canvas, r, y, b, guessRgb, () => {
+        setTimeout(() => {
+          mixArea.classList.remove('active');
+          mixArea.style.display = 'none';
+
+          const compare = document.getElementById(`compare-${index}`);
+          compare.querySelector('.guess-side').style.backgroundColor = rgb(guessRgb);
+          compare.querySelector('.target-side').style.backgroundColor = rgb(targetRgb);
+          compare.classList.add('visible');
+          document.getElementById(`labels-${index}`).classList.add('visible');
+
+          const info = document.getElementById(`info-${index}`);
+          info.querySelector('[data-rv="r"]').textContent = r;
+          info.querySelector('[data-rv="y"]').textContent = y;
+          info.querySelector('[data-rv="b"]').textContent = b;
+
+          // Feedback: highlight correct values
+          if (hasFeedback()) {
+            if (r === targetR) info.querySelector('[data-chip="r"]').classList.add('correct');
+            if (y === targetY) info.querySelector('[data-chip="y"]').classList.add('correct');
+            if (b === targetB) info.querySelector('[data-chip="b"]').classList.add('correct');
+          }
+
+          info.classList.add('visible');
+
+          row.className = 'guess-row done';
+          guessCount++;
+
+          const isWin = (r === targetR && y === targetY && b === targetB);
+
+          if (isWin) {
+            row.classList.add('win');
+            endGame(true);
+          } else if (guessCount >= MAX_GUESSES) {
+            endGame(false);
+          } else {
+            activateRow(guessCount);
+          }
+
+          animating = false;
+        }, 300);
+      });
+    }
+
+    // ========== END GAME ==========
+    function endGame(won) {
+      gameOver = true;
+
+      const inner = document.getElementById('targetCardInner');
+      inner.classList.add('revealed');
+      document.getElementById('targetCard').classList.add('glow');
+
+      setTimeout(() => {
+        document.getElementById('targetValues').innerHTML =
+          `<span style="color:#e74c3c">R:${targetR}</span> &mdash; ` +
+          `<span style="color:#f1c40f">Y:${targetY}</span> &mdash; ` +
+          `<span style="color:#3498db">B:${targetB}</span>`;
+      }, 400);
+
+      setTimeout(() => {
+        const section = document.getElementById('answerSection');
+        section.style.display = 'block';
+        const answerRow = document.getElementById('answerRow');
+
+        document.getElementById('answerColorSide').style.backgroundColor = rgb(targetRgb);
+        document.getElementById('answerTargetSide').style.backgroundColor = rgb(targetRgb);
+        document.getElementById('ansRV-r').textContent = targetR;
+        document.getElementById('ansRV-y').textContent = targetY;
+        document.getElementById('ansRV-b').textContent = targetB;
+
+        if (won) {
+          answerRow.classList.add('win');
+          document.getElementById('endMessage').innerHTML =
+            `<span style="color:#538d4e; font-size:1.3rem; font-weight:800;">Perfect Match!</span><br>` +
+            `<span style="color:#8a8a8c; font-size:0.85rem;">You nailed it in ${guessCount} guess${guessCount > 1 ? 'es' : ''}!</span>`;
+        } else {
+          answerRow.style.borderColor = '#e74c3c';
+          document.getElementById('endMessage').innerHTML =
+            `<span style="color:#e74c3c; font-size:1.3rem; font-weight:800;">Not Quite</span><br>` +
+            `<span style="color:#8a8a8c; font-size:0.85rem;">Here's the answer</span>`;
+        }
+      }, 600);
+    }
+
+    // ========== INIT ==========
+    function initGame() {
+      const t = dailyTargets[difficulty];
+      targetR = t.r;
+      targetY = t.y;
+      targetB = t.b;
+      const rNorm = normalizeForRyb(targetR);
+      const yNorm = normalizeForRyb(targetY);
+      const bNorm = normalizeForRyb(targetB);
+      targetRgb = rybToRgb(rNorm, yNorm, bNorm);
+      guessCount = 0;
+      gameOver = false;
+      animating = false;
+      lastGuess = { r: 0, y: 0, b: 0 };
+
+      document.getElementById('targetColorBlock').style.backgroundColor = rgb(targetRgb);
+      document.getElementById('targetValues').innerHTML = '? &mdash; ? &mdash; ?';
+      document.getElementById('targetCardInner').classList.remove('revealed');
+      document.getElementById('targetCard').classList.remove('glow');
+
+      const container = document.getElementById('guessRows');
+      container.innerHTML = '';
+      for (let i = 0; i < MAX_GUESSES; i++) container.innerHTML += buildRowHTML(i);
+
+      document.getElementById('answerSection').style.display = 'none';
+      document.getElementById('answerRow').className = 'guess-row done';
+      document.getElementById('answerRow').style.borderColor = '#3a3a3c';
+      activateRow(0);
+    }
+
+    document.getElementById('playAgainBtn').addEventListener('click', () => {
+      // Generate fresh targets for all difficulties
+      dailyTargets.easy = generateMixTarget(DIFF_CONFIG.easy.max);
+      dailyTargets.medium = generateMixTarget(DIFF_CONFIG.medium.max);
+      dailyTargets.hard = generateMixTarget(DIFF_CONFIG.hard.max);
+      initGame();
+    });
+    initGame();
+  </script>
+</body>
+</html>
