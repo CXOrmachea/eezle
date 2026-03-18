@@ -43,10 +43,10 @@
     .diff-buttons { display: flex; gap: 8px; justify-content: center; }
 
     .diff-btn {
-      flex: 1; padding: 12px 0; border: 2px solid #3a3a3c; border-radius: 10px;
-      background: #2a2a2c; color: #888; font-size: 0.85rem; font-weight: 700;
+      flex: 1; padding: 10px 0; border: 2px solid #3a3a3c; border-radius: 10px;
+      background: #2a2a2c; color: #888; font-size: 0.7rem; font-weight: 700;
       cursor: pointer; transition: all 0.15s ease; text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
     .diff-btn:hover { background: #3a3a3c; color: #ccc; }
@@ -140,6 +140,11 @@
       flex: 1; padding: 10px 0; border: 2px solid #3a3a3c; border-radius: 8px;
       background: #2a2a2c; color: #888; font-size: 1rem; font-weight: 700;
       font-family: 'Courier New', monospace; cursor: pointer; transition: all 0.12s ease;
+      min-width: 0;
+    }
+
+    .picker-btn.compact {
+      padding: 8px 0; font-size: 0.75rem; border-radius: 6px;
     }
 
     .picker-btn:hover { background: #3a3a3c; color: #ccc; }
@@ -248,6 +253,8 @@
         <button class="diff-btn active" data-diff="easy">Easy</button>
         <button class="diff-btn" data-diff="medium">Medium</button>
         <button class="diff-btn" data-diff="hard">Hard</button>
+        <button class="diff-btn" data-diff="yolo">YOLO</button>
+        <button class="diff-btn" data-diff="bobross">Bob Ross</button>
       </div>
       <div class="diff-desc" id="diffDesc">0–3 per color, correct values highlighted</div>
     </section>
@@ -319,9 +326,11 @@
 
     // ========== DIFFICULTY ==========
     const DIFF_CONFIG = {
-      easy:   { max: 3, feedback: true,  desc: '0\u20133 per color, correct values highlighted' },
-      medium: { max: 5, feedback: true,  desc: '0\u20135 per color, correct values highlighted' },
-      hard:   { max: 5, feedback: false, desc: '0\u20135 per color, no feedback' },
+      easy:    { max: 3,  guesses: 3, feedback: true,  desc: '0\u20133 per color, 3 guesses, correct values highlighted' },
+      medium:  { max: 5,  guesses: 3, feedback: true,  desc: '0\u20135 per color, 3 guesses, correct values highlighted' },
+      hard:    { max: 5,  guesses: 3, feedback: false, desc: '0\u20135 per color, 3 guesses, no feedback' },
+      yolo:    { max: 5,  guesses: 1, feedback: false, desc: '0\u20135 per color, 1 guess, no feedback' },
+      bobross: { max: 10, guesses: 3, feedback: false, desc: '0\u201310 per color, 3 guesses, no feedback' },
     };
 
     let difficulty = 'easy';
@@ -339,11 +348,13 @@
 
     // Pre-generate one target per difficulty on page load
     // Each difficulty gets its own color, stable across switches
-    const dailyTargets = {
-      easy:   generateMixTarget(DIFF_CONFIG.easy.max),
-      medium: generateMixTarget(DIFF_CONFIG.medium.max),
-      hard:   generateMixTarget(DIFF_CONFIG.hard.max),
-    };
+    const dailyTargets = {};
+    function generateAllTargets() {
+      Object.keys(DIFF_CONFIG).forEach(d => {
+        dailyTargets[d] = generateMixTarget(DIFF_CONFIG[d].max);
+      });
+    }
+    generateAllTargets();
 
     document.querySelectorAll('.diff-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -356,7 +367,6 @@
     });
 
     // ========== STATE ==========
-    const MAX_GUESSES = 3;
     let targetR, targetY, targetB, targetRgb;
     let guessCount = 0;
     let gameOver = false;
@@ -364,6 +374,7 @@
     let lastGuess = null;
 
     function maxVal() { return DIFF_CONFIG[difficulty].max; }
+    function maxGuesses() { return DIFF_CONFIG[difficulty].guesses; }
     function hasFeedback() { return DIFF_CONFIG[difficulty].feedback; }
 
     function normalizeForRyb(val) {
@@ -372,9 +383,10 @@
 
     // ========== BUILD ROW ==========
     function buildPickerButtons(max) {
+      const compact = max > 6 ? ' compact' : '';
       let html = '';
       for (let i = 0; i <= max; i++) {
-        html += `<button class="picker-btn" data-value="${i}">${i}</button>`;
+        html += `<button class="picker-btn${compact}" data-value="${i}">${i}</button>`;
       }
       return html;
     }
@@ -639,7 +651,7 @@
           if (isWin) {
             row.classList.add('win');
             endGame(true);
-          } else if (guessCount >= MAX_GUESSES) {
+          } else if (guessCount >= maxGuesses()) {
             endGame(false);
           } else {
             activateRow(guessCount);
@@ -712,7 +724,8 @@
 
       const container = document.getElementById('guessRows');
       container.innerHTML = '';
-      for (let i = 0; i < MAX_GUESSES; i++) container.innerHTML += buildRowHTML(i);
+      const numGuesses = maxGuesses();
+      for (let i = 0; i < numGuesses; i++) container.innerHTML += buildRowHTML(i);
 
       document.getElementById('answerSection').style.display = 'none';
       document.getElementById('answerRow').className = 'guess-row done';
@@ -721,10 +734,7 @@
     }
 
     document.getElementById('playAgainBtn').addEventListener('click', () => {
-      // Generate fresh targets for all difficulties
-      dailyTargets.easy = generateMixTarget(DIFF_CONFIG.easy.max);
-      dailyTargets.medium = generateMixTarget(DIFF_CONFIG.medium.max);
-      dailyTargets.hard = generateMixTarget(DIFF_CONFIG.hard.max);
+      generateAllTargets();
       initGame();
     });
     initGame();
