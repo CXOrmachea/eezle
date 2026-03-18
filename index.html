@@ -317,93 +317,106 @@
 
     function rgb(c) { return `rgb(${c[0]},${c[1]},${c[2]})`; }
 
-    // ========== NATURE COLOR NAMES ==========
-    const NATURE_COLORS = [
+    // ========== COLOR REFERENCE TABLE ==========
+    const COLOR_REF = [
       // Reds
-      { name: 'Strawberry', rgb: [252, 90, 80] },
-      { name: 'Tomato', rgb: [255, 99, 71] },
-      { name: 'Poppy', rgb: [227, 38, 54] },
-      { name: 'Cherry', rgb: [222, 49, 99] },
-      { name: 'Pomegranate', rgb: [196, 30, 58] },
-      { name: 'Cranberry', rgb: [159, 0, 29] },
-      { name: 'Raspberry', rgb: [227, 11, 92] },
-      { name: 'Rose', rgb: [255, 0, 127] },
-      { name: 'Hibiscus', rgb: [181, 44, 89] },
+      { color: 'Scarlet',        like: 'a field of poppies',              rgb: [255, 36, 0] },
+      { color: 'Crimson',        like: 'a ripe pomegranate',              rgb: [220, 20, 60] },
+      { color: 'Vermillion',     like: 'a red bell pepper',               rgb: [227, 66, 52] },
+      { color: 'Ruby',           like: 'a polished ruby gemstone',        rgb: [224, 17, 95] },
+      { color: 'Carmine',        like: 'crushed cochineal beetles',       rgb: [150, 0, 24] },
+      { color: 'Coral Red',      like: 'a ripe strawberry',               rgb: [255, 64, 64] },
+      { color: 'Blood Orange',   like: 'a blood orange half',             rgb: [204, 85, 0] },
+      { color: 'Brick Red',      like: 'sun-baked clay',                  rgb: [203, 65, 84] },
       // Oranges
-      { name: 'Tangerine', rgb: [255, 159, 0] },
-      { name: 'Peach', rgb: [255, 203, 164] },
-      { name: 'Apricot', rgb: [251, 206, 177] },
-      { name: 'Cantaloupe', rgb: [255, 166, 83] },
-      { name: 'Marigold', rgb: [234, 162, 33] },
-      { name: 'Persimmon', rgb: [236, 88, 0] },
-      { name: 'Pumpkin', rgb: [255, 117, 24] },
-      { name: 'Carrot', rgb: [237, 145, 33] },
+      { color: 'Tangerine',      like: 'a fresh tangerine peel',          rgb: [255, 159, 0] },
+      { color: 'Peach',          like: 'the blush of a ripe peach',       rgb: [255, 203, 164] },
+      { color: 'Apricot',        like: 'dried apricots in the sun',       rgb: [251, 206, 177] },
+      { color: 'Amber',          like: 'fossilized tree resin',           rgb: [255, 191, 0] },
+      { color: 'Burnt Orange',   like: 'autumn maple leaves',             rgb: [204, 85, 0] },
+      { color: 'Pumpkin',        like: 'a Halloween pumpkin',             rgb: [255, 117, 24] },
+      { color: 'Copper',         like: 'a weathered penny',               rgb: [184, 115, 51] },
+      { color: 'Papaya',         like: 'the flesh of a ripe papaya',      rgb: [255, 164, 83] },
       // Yellows
-      { name: 'Sunflower', rgb: [255, 218, 3] },
-      { name: 'Daffodil', rgb: [255, 255, 49] },
-      { name: 'Lemon', rgb: [255, 247, 0] },
-      { name: 'Banana', rgb: [255, 225, 53] },
-      { name: 'Buttercup', rgb: [253, 224, 71] },
-      { name: 'Goldenrod', rgb: [218, 165, 32] },
+      { color: 'Sunflower',      like: 'a field of sunflowers',           rgb: [255, 218, 3] },
+      { color: 'Canary',         like: 'a canary\'s feathers',            rgb: [255, 239, 0] },
+      { color: 'Lemon',          like: 'a fresh lemon rind',              rgb: [255, 247, 0] },
+      { color: 'Saffron',        like: 'threads of saffron spice',        rgb: [244, 196, 48] },
+      { color: 'Honey',          like: 'golden wildflower honey',         rgb: [235, 177, 52] },
+      { color: 'Goldenrod',      like: 'goldenrod wildflowers',           rgb: [218, 165, 32] },
+      { color: 'Buttercream',    like: 'fresh buttercream frosting',      rgb: [253, 224, 71] },
+      { color: 'Wheat',          like: 'a field of ripe wheat',           rgb: [245, 222, 179] },
       // Greens
-      { name: 'Lime', rgb: [191, 255, 0] },
-      { name: 'Fern', rgb: [79, 121, 66] },
-      { name: 'Sage', rgb: [138, 154, 91] },
-      { name: 'Mint', rgb: [152, 255, 152] },
-      { name: 'Basil', rgb: [88, 130, 52] },
-      { name: 'Avocado', rgb: [86, 130, 3] },
-      { name: 'Pine', rgb: [1, 121, 111] },
-      { name: 'Shamrock', rgb: [0, 158, 96] },
-      { name: 'Moss', rgb: [138, 154, 91] },
-      { name: 'Pistachio', rgb: [147, 197, 114] },
+      { color: 'Lime',           like: 'a freshly cut lime',              rgb: [191, 255, 0] },
+      { color: 'Fern',           like: 'a forest fern frond',             rgb: [79, 121, 66] },
+      { color: 'Sage',           like: 'dried sage leaves',               rgb: [138, 154, 91] },
+      { color: 'Mint',           like: 'fresh mint leaves in the sun',    rgb: [152, 255, 152] },
+      { color: 'Forest',         like: 'a dense pine forest',             rgb: [34, 139, 34] },
+      { color: 'Olive',          like: 'cured green olives',              rgb: [128, 128, 0] },
+      { color: 'Jade',           like: 'a polished jade stone',           rgb: [0, 168, 107] },
+      { color: 'Pistachio',      like: 'the inside of a pistachio',       rgb: [147, 197, 114] },
+      { color: 'Teal',           like: 'a teal duck\'s head feathers',    rgb: [0, 128, 128] },
+      { color: 'Sea Glass',      like: 'tumbled sea glass',               rgb: [112, 198, 169] },
+      { color: 'Emerald',        like: 'a Colombian emerald',             rgb: [80, 200, 120] },
+      { color: 'Moss',           like: 'moss on a river stone',           rgb: [108, 124, 72] },
       // Blues
-      { name: 'Blueberry', rgb: [79, 108, 176] },
-      { name: 'Cornflower', rgb: [100, 149, 237] },
-      { name: 'Hydrangea', rgb: [86, 130, 198] },
-      { name: 'Forget-me-not', rgb: [99, 183, 226] },
-      { name: 'Iris', rgb: [93, 63, 211] },
-      { name: 'Delphinium', rgb: [50, 74, 178] },
+      { color: 'Sky Blue',       like: 'a clear summer sky',              rgb: [135, 206, 235] },
+      { color: 'Cornflower',     like: 'a cornflower in bloom',           rgb: [100, 149, 237] },
+      { color: 'Cobalt',         like: 'cobalt ceramic glaze',            rgb: [0, 71, 171] },
+      { color: 'Navy',           like: 'the deep ocean at night',         rgb: [0, 0, 128] },
+      { color: 'Periwinkle',     like: 'periwinkle wildflowers',          rgb: [133, 133, 211] },
+      { color: 'Steel Blue',     like: 'brushed steel in blue light',     rgb: [70, 130, 180] },
+      { color: 'Cerulean',       like: 'a glacier-fed lake',              rgb: [42, 161, 209] },
+      { color: 'Powder Blue',    like: 'a robin\'s egg',                  rgb: [176, 224, 230] },
+      { color: 'Indigo',         like: 'natural indigo dye',              rgb: [63, 0, 255] },
       // Purples
-      { name: 'Lavender', rgb: [181, 126, 220] },
-      { name: 'Plum', rgb: [142, 69, 133] },
-      { name: 'Eggplant', rgb: [97, 64, 81] },
-      { name: 'Grape', rgb: [111, 45, 168] },
-      { name: 'Orchid', rgb: [218, 112, 214] },
-      { name: 'Lilac', rgb: [200, 162, 200] },
-      { name: 'Wisteria', rgb: [150, 110, 188] },
-      { name: 'Boysenberry', rgb: [135, 50, 96] },
+      { color: 'Lavender',       like: 'a lavender field in Provence',    rgb: [181, 126, 220] },
+      { color: 'Plum',           like: 'the skin of a ripe plum',         rgb: [142, 69, 133] },
+      { color: 'Aubergine',      like: 'a glossy eggplant skin',          rgb: [97, 64, 81] },
+      { color: 'Amethyst',       like: 'an amethyst crystal geode',       rgb: [153, 102, 204] },
+      { color: 'Orchid',         like: 'a Phalaenopsis orchid',           rgb: [218, 112, 214] },
+      { color: 'Lilac',          like: 'lilac blossoms in spring',        rgb: [200, 162, 200] },
+      { color: 'Wisteria',       like: 'hanging wisteria vines',          rgb: [150, 110, 188] },
+      { color: 'Mulberry',       like: 'crushed mulberries',              rgb: [135, 50, 96] },
+      { color: 'Grape',          like: 'a cluster of Concord grapes',     rgb: [111, 45, 168] },
+      { color: 'Mauve',          like: 'dried rose petals',               rgb: [204, 153, 204] },
       // Pinks
-      { name: 'Peony', rgb: [255, 145, 164] },
-      { name: 'Carnation', rgb: [255, 166, 201] },
-      { name: 'Tulip', rgb: [255, 135, 141] },
-      { name: 'Flamingo Lily', rgb: [234, 134, 133] },
-      { name: 'Azalea', rgb: [255, 111, 150] },
+      { color: 'Rose Pink',      like: 'the center of a peony',          rgb: [255, 145, 164] },
+      { color: 'Blush',          like: 'a pink carnation',                rgb: [255, 166, 201] },
+      { color: 'Salmon',         like: 'fresh wild salmon',               rgb: [250, 128, 114] },
+      { color: 'Flamingo',       like: 'a flamingo\'s wing',              rgb: [252, 142, 172] },
+      { color: 'Hot Pink',       like: 'a bougainvillea in full bloom',   rgb: [255, 105, 180] },
+      { color: 'Fuchsia',        like: 'hanging fuchsia flowers',         rgb: [255, 0, 255] },
       // Browns / Earthy
-      { name: 'Cinnamon', rgb: [210, 105, 30] },
-      { name: 'Walnut', rgb: [121, 79, 45] },
-      { name: 'Cocoa', rgb: [110, 59, 38] },
-      { name: 'Mushroom', rgb: [186, 158, 136] },
-      { name: 'Acorn', rgb: [145, 97, 42] },
-      { name: 'Chestnut', rgb: [149, 69, 53] },
-      // Neutrals
-      { name: 'Coconut', rgb: [255, 253, 244] },
-      { name: 'Cotton', rgb: [242, 240, 235] },
-      { name: 'Jasmine', rgb: [248, 222, 126] },
-      { name: 'Gardenia', rgb: [255, 253, 230] },
-      { name: 'Charcoal Root', rgb: [54, 56, 62] },
-      { name: 'Blackberry', rgb: [43, 29, 53] },
+      { color: 'Cinnamon',       like: 'a stick of Ceylon cinnamon',      rgb: [210, 105, 30] },
+      { color: 'Walnut',         like: 'a polished walnut shell',         rgb: [121, 79, 45] },
+      { color: 'Cocoa',          like: 'rich cocoa powder',               rgb: [110, 59, 38] },
+      { color: 'Sandstone',      like: 'desert sandstone at dusk',        rgb: [186, 158, 136] },
+      { color: 'Sienna',         like: 'Tuscan clay earth',               rgb: [160, 82, 45] },
+      { color: 'Chestnut',       like: 'roasted chestnuts',               rgb: [149, 69, 53] },
+      { color: 'Teak',           like: 'aged teak wood',                  rgb: [145, 97, 42] },
+      { color: 'Espresso',       like: 'a shot of espresso',              rgb: [78, 42, 22] },
+      // Neutrals / Light
+      { color: 'Ivory',          like: 'a gardenia petal',                rgb: [255, 255, 240] },
+      { color: 'Cream',          like: 'fresh heavy cream',               rgb: [255, 253, 208] },
+      { color: 'Pearl',          like: 'a freshwater pearl',              rgb: [234, 224, 200] },
+      { color: 'Cloud White',    like: 'cotton clouds on a clear day',    rgb: [242, 240, 235] },
+      // Darks
+      { color: 'Charcoal',       like: 'burnt willow charcoal',           rgb: [54, 56, 62] },
+      { color: 'Obsidian',       like: 'volcanic obsidian glass',         rgb: [43, 29, 53] },
+      { color: 'Midnight',       like: 'a moonless night sky',            rgb: [25, 25, 50] },
     ];
 
-    function closestNatureName(targetRgb) {
+    function closestColorRef(targetRgb) {
       let best = null, bestDist = Infinity;
-      for (const entry of NATURE_COLORS) {
+      for (const entry of COLOR_REF) {
         const dr = targetRgb[0] - entry.rgb[0];
         const dg = targetRgb[1] - entry.rgb[1];
         const db = targetRgb[2] - entry.rgb[2];
         const dist = dr*dr + dg*dg + db*db;
         if (dist < bestDist) { bestDist = dist; best = entry; }
       }
-      return best.name;
+      return best;
     }
 
     // Paint colors for the canvas animation
@@ -777,20 +790,22 @@
         document.getElementById('ansRV-y').textContent = targetY;
         document.getElementById('ansRV-b').textContent = targetB;
 
-        const natureName = closestNatureName(targetRgb);
+        const ref = closestColorRef(targetRgb);
+        const colorLine = `<span style="color:#bbb; font-size:0.9rem;"><strong>${ref.color}</strong></span>` +
+          `<br><span style="color:#6a6a6c; font-size:0.8rem; font-style:italic;">Like ${ref.like}</span>`;
 
         if (won) {
           answerRow.classList.add('win');
           document.getElementById('endMessage').innerHTML =
             `<span style="color:#538d4e; font-size:1.3rem; font-weight:800;">Perfect Match!</span><br>` +
             `<span style="color:#8a8a8c; font-size:0.85rem;">You nailed it in ${guessCount} guess${guessCount > 1 ? 'es' : ''}!</span><br>` +
-            `<span style="color:#bbb; font-size:0.85rem; font-style:italic;">The color was <strong>${natureName}</strong></span>`;
+            colorLine;
         } else {
           answerRow.style.borderColor = '#e74c3c';
           document.getElementById('endMessage').innerHTML =
             `<span style="color:#e74c3c; font-size:1.3rem; font-weight:800;">Not Quite</span><br>` +
             `<span style="color:#8a8a8c; font-size:0.85rem;">Here's the answer</span><br>` +
-            `<span style="color:#bbb; font-size:0.85rem; font-style:italic;">The color was <strong>${natureName}</strong></span>`;
+            colorLine;
         }
       }, 600);
     }
