@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Color Mix Daily</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    button { touch-action: manipulation; }
 
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -287,6 +288,47 @@
     .legend-dot.guess-dot {
       background: transparent;
       border: 2px solid #fff;
+    }
+
+    /* ---- MOBILE RESPONSIVE ---- */
+    @media (max-width: 420px) {
+      header { padding: 12px 0 8px; }
+      header h1 { font-size: 1.3rem; letter-spacing: 1px; }
+      header p { font-size: 0.7rem; }
+
+      .game-container { padding: 14px 10px; gap: 14px; }
+
+      .diff-buttons { gap: 4px; flex-wrap: wrap; }
+      .diff-btn { padding: 8px 0; font-size: 0.6rem; border-radius: 8px; min-width: 0; }
+
+      .target-card { padding: 14px; }
+      .target-color-block { height: 70px; }
+      .target-values { font-size: 1rem; letter-spacing: 2px; margin-top: 8px; }
+
+      .row-controls { padding: 12px 10px; }
+      .picker-group { gap: 4px; margin-bottom: 8px; }
+      .picker-btn { padding: 8px 0; font-size: 0.85rem; border-radius: 6px; border-width: 1.5px; }
+      .picker-btn.compact { padding: 6px 0; font-size: 0.65rem; border-radius: 5px; }
+
+      .submit-btn { padding: 12px; font-size: 0.8rem; letter-spacing: 2px; }
+
+      .result-compare { height: 65px; }
+      .result-chip { font-size: 0.75rem; padding: 3px 7px; }
+      .result-chip .chip-label { font-size: 0.55rem; }
+
+      .colormap-wrap { padding: 10px; }
+      .colormap-wrap canvas { height: 120px; }
+      .colormap-legend { gap: 12px; }
+      .legend-item { font-size: 0.6rem; }
+
+      .play-again-btn { padding: 12px 28px; font-size: 0.85rem; }
+    }
+
+    @media (max-width: 360px) {
+      .diff-buttons { gap: 3px; }
+      .diff-btn { font-size: 0.55rem; padding: 7px 0; }
+      .picker-btn { padding: 7px 0; font-size: 0.75rem; }
+      .picker-btn.compact { padding: 5px 0; font-size: 0.6rem; }
     }
   </style>
 </head>
