@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Color Mix Daily</title>
+  <title>🎨 eezle</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     button { touch-action: manipulation; }
@@ -239,6 +239,30 @@
 
     .play-again-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,0.4); }
 
+    /* ---- PIGMENT REVEAL ---- */
+    .pigment-reveal {
+      margin-top: 12px; text-align: center;
+      background: #1e1e20; border: 1px solid #3a3a3c;
+      border-radius: 12px; overflow: hidden;
+      animation: fadeIn 0.5s ease;
+      padding: 18px 16px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .pigment-swatch {
+      width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+      border: 3px solid #fff; box-shadow: 0 0 12px rgba(255,255,255,0.15);
+    }
+    .pigment-info { text-align: left; flex: 1; min-width: 0; }
+    .pigment-name { color: #ddd; font-size: 0.95rem; font-weight: 700; }
+    .pigment-code { color: #6a6a6c; font-size: 0.75rem; font-family: 'Courier New', monospace; margin-top: 2px; }
+    .pigment-origin { color: #8a8a8c; font-size: 0.78rem; font-style: italic; margin-top: 4px; }
+    .pigment-harmony { margin-top: 6px; }
+    .harmony-label { color: #5a5a5c; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
+    .harmony-swatch {
+      display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid #555; vertical-align: middle; margin: 0 2px;
+    }
+
     /* ---- COLOR MAP ---- */
     .colormap-wrap {
       margin-top: 14px;
@@ -334,7 +358,7 @@
 </head>
 <body>
   <header>
-    <h1>Color Mix Daily</h1>
+    <h1>🎨 eezle</h1>
     <p>Match the target color by mixing Red, Yellow &amp; Blue paint</p>
   </header>
 
@@ -383,6 +407,7 @@
         </div>
       </div>
       <div id="endMessage" style="text-align:center; margin-top:14px;"></div>
+      <div id="pigmentReveal" class="pigment-reveal" style="display:none;"></div>
       <div class="colormap-wrap" id="colormapWrap" style="display:none;">
         <canvas id="colormapCanvas"></canvas>
         <div class="colormap-legend">
@@ -417,72 +442,63 @@
 
     function rgb(c) { return `rgb(${c[0]},${c[1]},${c[2]})`; }
 
-    // ========== COLOR REFERENCE TABLE ==========
-    // Artist pigment names with accurate RGB values
+    // ========== ARTIST PIGMENT REFERENCE ==========
     const COLOR_REF = [
-      // Classic pigments - Reds
-      { color: 'Cadmium Red',       pigment: 'PR108', origin: 'Discovered 1817, a staple of Matisse\'s palette', rgb: [227, 38, 54] },
-      { color: 'Alizarin Crimson',  pigment: 'PR83',  origin: 'Made from madder root since ancient Egypt',       rgb: [153, 0, 51] },
-      { color: 'Venetian Red',      pigment: 'PR101', origin: 'Earth pigment used since the Renaissance',        rgb: [200, 56, 44] },
-      { color: 'Indian Red',        pigment: 'PR101', origin: 'Named for the red earth of Bengal',               rgb: [176, 73, 67] },
-      { color: 'Vermillion',        pigment: 'PR106', origin: 'Ground cinnabar, prized since 2000 BC',           rgb: [227, 66, 52] },
-      { color: 'Rose Madder',       pigment: 'NR9',   origin: 'A favorite of the Pre-Raphaelites',              rgb: [227, 112, 142] },
-      { color: 'Scarlet Lake',      pigment: 'PR188', origin: 'Bright as a cardinal\'s plumage',                rgb: [252, 40, 71] },
-      // Oranges
-      { color: 'Cadmium Orange',    pigment: 'PO20',  origin: 'Warm as Mediterranean terracotta',                rgb: [237, 135, 45] },
-      { color: 'Burnt Sienna',      pigment: 'PBr7',  origin: 'Tuscan earth roasted to a warm glow',            rgb: [138, 72, 35] },
-      { color: 'Raw Sienna',        pigment: 'PBr7',  origin: 'Natural Italian earth, unburnt',                  rgb: [198, 137, 63] },
-      { color: 'Mars Orange',       pigment: 'PO42',  origin: 'Synthetic iron oxide, rich as sunset',            rgb: [196, 101, 35] },
-      // Yellows
-      { color: 'Cadmium Yellow',    pigment: 'PY37',  origin: 'Van Gogh\'s sunflower yellow',                   rgb: [255, 211, 0] },
-      { color: 'Naples Yellow',     pigment: 'PY41',  origin: 'Ancient pigment from Mount Vesuvius',             rgb: [250, 218, 94] },
-      { color: 'Yellow Ochre',      pigment: 'PY43',  origin: 'Cave painters\' first yellow, 40,000 years old', rgb: [204, 154, 42] },
-      { color: 'Lemon Yellow',      pigment: 'PY3',   origin: 'Cool and crisp as citrus zest',                   rgb: [255, 244, 79] },
-      { color: 'Indian Yellow',     pigment: 'PY153', origin: 'Once made from mango-fed cattle',                 rgb: [227, 168, 26] },
-      { color: 'Gold Ochre',        pigment: 'PY42',  origin: 'Warm as afternoon light through amber',           rgb: [199, 155, 41] },
-      { color: 'Buff Titanium',     pigment: 'PW6',   origin: 'Soft as candlelight on linen',                    rgb: [240, 220, 175] },
-      // Greens
-      { color: 'Viridian',          pigment: 'PG18',  origin: 'Monet\'s secret for water lilies',               rgb: [64, 130, 109] },
-      { color: 'Sap Green',         pigment: 'PG36',  origin: 'Medieval ink from buckthorn berries',             rgb: [80, 125, 42] },
-      { color: 'Terre Verte',       pigment: 'PG23',  origin: 'Green earth used in Renaissance underpaintings',  rgb: [106, 115, 78] },
-      { color: 'Chromium Oxide',    pigment: 'PG17',  origin: 'Opaque and enduring as evergreen forests',        rgb: [76, 111, 60] },
-      { color: 'Hooker\'s Green',   pigment: 'PG36',  origin: 'Named for botanical illustrator William Hooker', rgb: [73, 121, 57] },
-      { color: 'Phthalo Green',     pigment: 'PG7',   origin: 'Intensely vivid, a 20th century breakthrough',   rgb: [18, 120, 107] },
-      { color: 'Emerald Green',     pigment: 'PG18',  origin: 'Once made with arsenic — beautiful but deadly',   rgb: [80, 200, 120] },
-      { color: 'Olive Green',       pigment: 'PG17',  origin: 'Muted as sun-dried Mediterranean groves',         rgb: [107, 112, 43] },
-      // Blues
-      { color: 'Ultramarine',       pigment: 'PB29',  origin: 'Once worth more than gold, ground from lapis lazuli', rgb: [63, 63, 211] },
-      { color: 'Cerulean Blue',     pigment: 'PB35',  origin: 'Named from the Latin caelum — sky',              rgb: [42, 161, 209] },
-      { color: 'Cobalt Blue',       pigment: 'PB28',  origin: 'Discovered in 1802, beloved by Renoir',           rgb: [0, 71, 171] },
-      { color: 'Prussian Blue',     pigment: 'PB27',  origin: 'Accidentally created by a Berlin dye-maker in 1706', rgb: [0, 49, 83] },
-      { color: 'Phthalo Blue',      pigment: 'PB15',  origin: 'Powerful enough to tint an ocean of paint',       rgb: [0, 54, 139] },
-      { color: 'French Ultramarine', pigment: 'PB29', origin: 'Synthetic lapis, democratized in 1828',           rgb: [48, 48, 186] },
-      { color: 'Indigo',            pigment: 'PB66',  origin: 'Ancient dye from the indigo plant',               rgb: [54, 0, 125] },
-      { color: 'Manganese Blue',    pigment: 'PB33',  origin: 'Bright as a tropical lagoon',                     rgb: [52, 148, 186] },
-      // Purples
-      { color: 'Cobalt Violet',     pigment: 'PV14',  origin: 'Monet used it for shadows in haystacks',          rgb: [130, 67, 160] },
-      { color: 'Dioxazine Purple',  pigment: 'PV23',  origin: 'Deep as twilight, a modern organic pigment',      rgb: [86, 25, 127] },
-      { color: 'Mars Violet',       pigment: 'PR101', origin: 'Iron oxide with the warmth of aged wine',         rgb: [131, 67, 95] },
-      { color: 'Quinacridone Rose', pigment: 'PV19',  origin: 'Vivid as wild roses at dawn',                     rgb: [199, 49, 110] },
-      { color: 'Mauve',             pigment: 'PV19',  origin: 'The first synthetic dye, 1856',                   rgb: [180, 126, 179] },
-      // Pinks
-      { color: 'Quinacridone Pink', pigment: 'PV19',  origin: 'Bright as bougainvillea in summer',               rgb: [227, 92, 138] },
-      { color: 'Shell Pink',        pigment: 'PR101', origin: 'Soft as the inside of a conch shell',             rgb: [255, 183, 178] },
-      { color: 'Salmon',            pigment: 'PR188', origin: 'Warm as fresh copper in firelight',                rgb: [250, 128, 114] },
-      // Browns / Earth
-      { color: 'Burnt Umber',       pigment: 'PBr7',  origin: 'Roasted Umbrian earth, Rembrandt\'s shadow tone', rgb: [115, 66, 34] },
-      { color: 'Raw Umber',         pigment: 'PBr7',  origin: 'Natural earth from Umbria, Italy',                rgb: [130, 102, 55] },
-      { color: 'Vandyke Brown',     pigment: 'PBr7',  origin: 'Named for Anthony van Dyck\'s rich darks',       rgb: [99, 62, 33] },
-      { color: 'Sepia',             pigment: 'PBr7',  origin: 'Originally from cuttlefish ink',                   rgb: [112, 66, 20] },
-      { color: 'Transparent Oxide',  pigment: 'PR101', origin: 'Warm and glowing like backlit autumn leaves',    rgb: [160, 82, 45] },
-      // Neutrals
-      { color: 'Titanium White',    pigment: 'PW6',   origin: 'The brightest white, introduced in the 1920s',    rgb: [252, 252, 249] },
-      { color: 'Zinc White',        pigment: 'PW4',   origin: 'Translucent and cool, favored for glazing',       rgb: [240, 240, 235] },
-      { color: 'Payne\'s Grey',     pigment: 'PB29',  origin: 'William Payne\'s subtle alternative to black',   rgb: [83, 104, 120] },
-      { color: 'Ivory Black',       pigment: 'PBk9',  origin: 'Once made from charred ivory, now bone char',     rgb: [41, 36, 33] },
-      { color: 'Lamp Black',        pigment: 'PBk7',  origin: 'Soot collected from oil lamps since antiquity',   rgb: [46, 46, 46] },
-      { color: 'Davy\'s Grey',      pigment: 'PBk19', origin: 'Named for chemist Humphry Davy',                  rgb: [130, 130, 130] },
-      { color: 'Unbleached Titanium', pigment: 'PW6', origin: 'Warm as parchment under candlelight',             rgb: [232, 220, 192] },
+      { color: 'Cadmium Red', pigment: 'PR108', origin: 'Discovered 1817, a staple of Matisse\'s palette', rgb: [227, 38, 54] },
+      { color: 'Alizarin Crimson', pigment: 'PR83', origin: 'From madder root, used since ancient Egypt', rgb: [153, 0, 51] },
+      { color: 'Vermilion', pigment: 'PR106', origin: 'Mercury sulfide — prized by Renaissance masters', rgb: [227, 66, 52] },
+      { color: 'Burnt Sienna', pigment: 'PBr7', origin: 'Roasted Siena earth, Italy — a Rembrandt essential', rgb: [138, 54, 15] },
+      { color: 'Raw Umber', pigment: 'PBr7', origin: 'Umbrian earth, darkened with manganese oxide', rgb: [115, 74, 18] },
+      { color: 'Yellow Ochre', pigment: 'PY43', origin: 'Iron oxide clay — one of the first pigments humans ever used', rgb: [204, 154, 0] },
+      { color: 'Cadmium Yellow', pigment: 'PY37', origin: 'Bright and opaque, Van Gogh\'s sunflower yellow', rgb: [255, 211, 0] },
+      { color: 'Naples Yellow', pigment: 'PY41', origin: 'Lead antimonate — found on ancient Babylonian tiles', rgb: [250, 218, 94] },
+      { color: 'Indian Yellow', pigment: 'PY153', origin: 'Originally from mango-fed cow urine, now synthetic', rgb: [227, 168, 87] },
+      { color: 'Cadmium Orange', pigment: 'PO20', origin: 'Cadmium selenide — vivid and permanent since 1910', rgb: [237, 135, 45] },
+      { color: 'Chrome Orange', pigment: 'PO21', origin: 'Lead chromate — bright but toxic, used by the Impressionists', rgb: [232, 120, 0] },
+      { color: 'Viridian', pigment: 'PG18', origin: 'Hydrated chromium oxide, a cool transparent green', rgb: [64, 130, 109] },
+      { color: 'Sap Green', pigment: 'PG36', origin: 'Originally buckthorn berry juice, now a phthalo blend', rgb: [80, 125, 42] },
+      { color: 'Terre Verte', pigment: 'PG23', origin: 'Green earth — used for skin underpainting since antiquity', rgb: [108, 135, 80] },
+      { color: 'Chromium Oxide Green', pigment: 'PG17', origin: 'Opaque and durable, C\u00e9zanne\'s landscape workhorse', rgb: [54, 105, 54] },
+      { color: 'Phthalo Green', pigment: 'PG7', origin: 'Phthalocyanine — synthesized 1927, intense tinting power', rgb: [18, 53, 36] },
+      { color: 'Ultramarine Blue', pigment: 'PB29', origin: 'Once from lapis lazuli, more precious than gold', rgb: [25, 68, 142] },
+      { color: 'Cobalt Blue', pigment: 'PB28', origin: 'Cobalt aluminate — developed 1802, Renoir\'s favourite', rgb: [0, 71, 171] },
+      { color: 'Cerulean Blue', pigment: 'PB35', origin: 'Cobalt stannate — the sky-blue of the Impressionists', rgb: [42, 82, 190] },
+      { color: 'Prussian Blue', pigment: 'PB27', origin: 'First modern synthetic pigment, Berlin 1704', rgb: [0, 49, 83] },
+      { color: 'Phthalo Blue', pigment: 'PB15', origin: 'Copper phthalocyanine — replaced Prussian blue', rgb: [0, 15, 137] },
+      { color: 'French Ultramarine', pigment: 'PB29', origin: 'Synthetic lapis, invented 1826 by Jean-Baptiste Guimet', rgb: [0, 45, 156] },
+      { color: 'Burnt Umber', pigment: 'PBr7', origin: 'Calcined umber — warm dark used for shadows', rgb: [138, 51, 36] },
+      { color: 'Raw Sienna', pigment: 'PBr7', origin: 'Natural iron oxide from Tuscany\'s hills', rgb: [196, 132, 55] },
+      { color: 'Venetian Red', pigment: 'PR101', origin: 'Synthetic iron oxide, named for Venetian glass-makers', rgb: [200, 8, 21] },
+      { color: 'Mars Violet', pigment: 'PR101', origin: 'Synthetic iron oxide — deep and permanent', rgb: [105, 40, 75] },
+      { color: 'Rose Madder', pigment: 'NR9', origin: 'Natural madder lake — Turner\'s favourite transparent red', rgb: [227, 112, 142] },
+      { color: 'Quinacridone Magenta', pigment: 'PR122', origin: 'Organic pigment, brilliant and lightfast since 1958', rgb: [142, 35, 107] },
+      { color: 'Dioxazine Violet', pigment: 'PV23', origin: 'Carbazole violet — deep and powerful tinting strength', rgb: [86, 15, 102] },
+      { color: 'Cobalt Violet', pigment: 'PV14', origin: 'Cobalt phosphate — Monet used it for shadows on snow', rgb: [130, 76, 148] },
+      { color: 'Manganese Violet', pigment: 'PV16', origin: 'Manganese ammonium pyrophosphate, developed 1868', rgb: [115, 50, 108] },
+      { color: 'Titanium White', pigment: 'PW6', origin: 'The most opaque white, standard since the 1920s', rgb: [252, 252, 252] },
+      { color: 'Zinc White', pigment: 'PW4', origin: 'Transparent and cool — used for glazing and tints', rgb: [244, 244, 238] },
+      { color: 'Ivory Black', pigment: 'PBk9', origin: 'Charred bone — Vel\u00e1zquez\'s deepest darks', rgb: [35, 31, 32] },
+      { color: 'Lamp Black', pigment: 'PBk7', origin: 'Soot from oil lamps — used since prehistoric cave art', rgb: [44, 44, 44] },
+      { color: 'Payne\'s Grey', pigment: 'PBk6', origin: 'Named for William Payne, 18th-century watercolourist', rgb: [83, 104, 120] },
+      { color: 'Mars Black', pigment: 'PBk11', origin: 'Synthetic iron oxide — dense, granulating, opaque', rgb: [50, 50, 50] },
+      { color: 'Scarlet Lake', pigment: 'PR188', origin: 'Naphthol — replaced the fugitive natural scarlet dyes', rgb: [207, 46, 49] },
+      { color: 'Cadmium Lemon', pigment: 'PY35', origin: 'Cadmium zinc sulfide — a pale, cool yellow', rgb: [255, 247, 0] },
+      { color: 'Lemon Yellow', pigment: 'PY3', origin: 'Arylide yellow — affordable and bright', rgb: [255, 244, 79] },
+      { color: 'Permanent Rose', pigment: 'PV19', origin: 'Quinacridone — replaced fugitive rose madder', rgb: [195, 52, 100] },
+      { color: 'Gold Ochre', pigment: 'PY42', origin: 'Warm synthetic iron oxide, rich and earthy', rgb: [204, 140, 0] },
+      { color: 'Indian Red', pigment: 'PR101', origin: 'Anhydrous iron oxide — from the red soils of India', rgb: [176, 56, 48] },
+      { color: 'Hooker\'s Green', pigment: 'PG36+PY150', origin: 'Named for botanical illustrator William Hooker', rgb: [73, 121, 75] },
+      { color: 'Cobalt Teal', pigment: 'PG50', origin: 'Cobalt titanate — a unique warm cyan', rgb: [0, 135, 132] },
+      { color: 'Cerulean', pigment: 'PB35', origin: 'From Latin caeruleum, meaning sky', rgb: [90, 155, 200] },
+      { color: 'King\'s Blue', pigment: 'PB29', origin: 'A rich warm ultramarine variant favoured by royalty', rgb: [65, 105, 225] },
+      { color: 'Perylene Maroon', pigment: 'PR179', origin: 'A deep transparent reddish-brown, introduced mid-20th c.', rgb: [108, 28, 38] },
+      { color: 'Oxide of Chromium', pigment: 'PG17', origin: 'Dense opaque green, used in military camouflage', rgb: [92, 113, 72] },
+      { color: 'Buff Titanium', pigment: 'PW6+PBr7', origin: 'A warm off-white mixing convenience colour', rgb: [237, 222, 178] },
+      { color: 'Davy\'s Grey', pigment: 'PBk19', origin: 'Powdered slate — named for chemist Humphry Davy', rgb: [130, 130, 130] },
+      { color: 'Turquoise', pigment: 'PB16', origin: 'Copper phthalocyanine variant — vivid blue-green', rgb: [0, 165, 156] },
+      { color: 'Flesh Tint', pigment: 'PW6+PY42+PR101', origin: 'A portrait-painting convenience mix, warm and rosy', rgb: [225, 185, 155] },
+      { color: 'Aureolin', pigment: 'PY40', origin: 'Cobalt yellow — transparent, prized by watercolourists', rgb: [253, 238, 0] },
+      { color: 'Gamboge', pigment: 'NY24', origin: 'From Cambodian tree resin — a golden transparent yellow', rgb: [228, 155, 15] },
     ];
 
     // Weighted perceptual color distance (redmean approximation)
@@ -492,25 +508,22 @@
       return Math.sqrt((2 + rMean/256) * dr*dr + 4 * dg*dg + (2 + (255 - rMean)/256) * db*db);
     }
 
+    // Find closest pigment name for a given RGB
     function closestColorRef(targetRgb) {
-      let best = null, bestDist = Infinity;
-      for (const entry of COLOR_REF) {
-        const dist = colorDist(targetRgb, entry.rgb);
-        if (dist < bestDist) { bestDist = dist; best = entry; }
+      let best = COLOR_REF[0], bestDist = Infinity;
+      for (const ref of COLOR_REF) {
+        const d = colorDist(ref.rgb, targetRgb);
+        if (d < bestDist) { bestDist = d; best = ref; }
       }
       return best;
     }
 
     // Color harmony helpers
-    function complementaryRgb(rgb) {
-      const [h, s, l] = rgbToHsl(...rgb);
-      return hslToRgb((h + 0.5) % 1, s, l);
-    }
     function harmonyPalette(rgb) {
       const [h, s, l] = rgbToHsl(...rgb);
       return [
-        hslToRgb((h + 1/12) % 1, s, l),   // analogous +30°
-        hslToRgb((h + 11/12) % 1, s, l),   // analogous -30°
+        hslToRgb((h + 1/12) % 1, s, l),   // analogous +30
+        hslToRgb((h + 11/12) % 1, s, l),   // analogous -30
         hslToRgb((h + 0.5) % 1, s, l),     // complementary
       ];
     }
@@ -533,7 +546,9 @@
 
     let difficulty = 'easy';
 
-    // Generate a target that is always a mix (at least 2 non-zero channels, each >= 1)
+    // Pre-generate one target per difficulty on page load
+    const dailyTargets = {};
+
     function generateMixTarget(max) {
       let r, y, b;
       do {
@@ -544,9 +559,6 @@
       return { r, y, b };
     }
 
-    // Pre-generate one target per difficulty on page load
-    // Each difficulty gets its own color, stable across switches
-    const dailyTargets = {};
     function generateAllTargets() {
       Object.keys(DIFF_CONFIG).forEach(d => {
         dailyTargets[d] = generateMixTarget(DIFF_CONFIG[d].max);
@@ -851,10 +863,17 @@
           if (isWin) {
             row.classList.add('win');
             endGame(true);
+            setTimeout(() => {
+              document.getElementById('answerSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 700);
           } else if (guessCount >= maxGuesses()) {
             endGame(false);
+            setTimeout(() => {
+              document.getElementById('answerSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 700);
           } else {
             activateRow(guessCount);
+            document.getElementById(`row-${guessCount}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
 
           animating = false;
@@ -973,7 +992,6 @@
         for (let i = 1; i < guessPositions.length; i++) {
           ctx.lineTo(guessPositions[i].x, guessPositions[i].y);
         }
-        // Dashed line from last guess to target
         ctx.strokeStyle = 'rgba(255,255,255,0.6)';
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -1029,7 +1047,6 @@
       setTimeout(() => {
         const section = document.getElementById('answerSection');
         section.style.display = 'block';
-        const answerRow = document.getElementById('answerRow');
 
         document.getElementById('answerColorSide').style.backgroundColor = rgb(targetRgb);
         document.getElementById('answerTargetSide').style.backgroundColor = rgb(targetRgb);
@@ -1040,27 +1057,37 @@
         const ref = closestColorRef(targetRgb);
         const palette = harmonyPalette(targetRgb);
         const swatches = palette.map(c =>
-          `<span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:rgb(${c.join(',')});border:2px solid #555;vertical-align:middle;margin:0 3px;"></span>`
+          `<span class="harmony-swatch" style="background:rgb(${c.join(',')})"></span>`
         ).join('');
 
-        const pigmentLine = `<span style="color:#bbb; font-size:0.95rem;"><strong>${ref.color}</strong></span>` +
-          `<span style="color:#6a6a6c; font-size:0.75rem;"> (${ref.pigment})</span>` +
-          `<br><span style="color:#8a8a8c; font-size:0.8rem; font-style:italic;">${ref.origin}</span>` +
-          `<br><span style="color:#6a6a6c; font-size:0.75rem; margin-top:6px; display:inline-block;">Pairs with</span> ${swatches}`;
+        const colorName = `<span style="color:#bbb; font-size:0.95rem;"><strong>${ref.color}</strong></span>` +
+          `<br><span style="color:#6a6a6c; font-size:0.8rem; font-style:italic;">${ref.origin}</span>`;
 
         if (won) {
-          answerRow.classList.add('win');
+          document.getElementById('answerRow').classList.add('win');
           document.getElementById('endMessage').innerHTML =
             `<span style="color:#538d4e; font-size:1.3rem; font-weight:800;">Perfect Match!</span><br>` +
             `<span style="color:#8a8a8c; font-size:0.85rem;">You nailed it in ${guessCount} guess${guessCount > 1 ? 'es' : ''}!</span><br>` +
-            pigmentLine;
+            colorName;
         } else {
-          answerRow.style.borderColor = '#e74c3c';
+          document.getElementById('answerRow').style.borderColor = '#e74c3c';
           document.getElementById('endMessage').innerHTML =
             `<span style="color:#e74c3c; font-size:1.3rem; font-weight:800;">Not Quite</span><br>` +
             `<span style="color:#8a8a8c; font-size:0.85rem;">Here's the answer</span><br>` +
-            pigmentLine;
+            colorName;
         }
+
+        // Show pigment reveal
+        const revealEl = document.getElementById('pigmentReveal');
+        revealEl.style.display = 'flex';
+        revealEl.innerHTML =
+          `<div class="pigment-swatch" style="background:${rgb(targetRgb)}"></div>` +
+          `<div class="pigment-info">` +
+            `<div class="pigment-name">${ref.color}</div>` +
+            `<div class="pigment-code">${ref.pigment}</div>` +
+            `<div class="pigment-origin">${ref.origin}</div>` +
+            `<div class="pigment-harmony"><span class="harmony-label">Pairs with </span>${swatches}</div>` +
+          `</div>`;
 
         renderColorMap(targetRgb, guessHistory);
       }, 600);
@@ -1087,6 +1114,7 @@
       document.getElementById('targetCardInner').classList.remove('revealed');
       document.getElementById('targetCard').classList.remove('glow');
       document.getElementById('colormapWrap').style.display = 'none';
+      document.getElementById('pigmentReveal').style.display = 'none';
 
       const container = document.getElementById('guessRows');
       container.innerHTML = '';
