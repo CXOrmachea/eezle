@@ -317,6 +317,95 @@
 
     function rgb(c) { return `rgb(${c[0]},${c[1]},${c[2]})`; }
 
+    // ========== NATURE COLOR NAMES ==========
+    const NATURE_COLORS = [
+      // Reds
+      { name: 'Strawberry', rgb: [252, 90, 80] },
+      { name: 'Tomato', rgb: [255, 99, 71] },
+      { name: 'Poppy', rgb: [227, 38, 54] },
+      { name: 'Cherry', rgb: [222, 49, 99] },
+      { name: 'Pomegranate', rgb: [196, 30, 58] },
+      { name: 'Cranberry', rgb: [159, 0, 29] },
+      { name: 'Raspberry', rgb: [227, 11, 92] },
+      { name: 'Rose', rgb: [255, 0, 127] },
+      { name: 'Hibiscus', rgb: [181, 44, 89] },
+      // Oranges
+      { name: 'Tangerine', rgb: [255, 159, 0] },
+      { name: 'Peach', rgb: [255, 203, 164] },
+      { name: 'Apricot', rgb: [251, 206, 177] },
+      { name: 'Cantaloupe', rgb: [255, 166, 83] },
+      { name: 'Marigold', rgb: [234, 162, 33] },
+      { name: 'Persimmon', rgb: [236, 88, 0] },
+      { name: 'Pumpkin', rgb: [255, 117, 24] },
+      { name: 'Carrot', rgb: [237, 145, 33] },
+      // Yellows
+      { name: 'Sunflower', rgb: [255, 218, 3] },
+      { name: 'Daffodil', rgb: [255, 255, 49] },
+      { name: 'Lemon', rgb: [255, 247, 0] },
+      { name: 'Banana', rgb: [255, 225, 53] },
+      { name: 'Buttercup', rgb: [253, 224, 71] },
+      { name: 'Goldenrod', rgb: [218, 165, 32] },
+      // Greens
+      { name: 'Lime', rgb: [191, 255, 0] },
+      { name: 'Fern', rgb: [79, 121, 66] },
+      { name: 'Sage', rgb: [138, 154, 91] },
+      { name: 'Mint', rgb: [152, 255, 152] },
+      { name: 'Basil', rgb: [88, 130, 52] },
+      { name: 'Avocado', rgb: [86, 130, 3] },
+      { name: 'Pine', rgb: [1, 121, 111] },
+      { name: 'Shamrock', rgb: [0, 158, 96] },
+      { name: 'Moss', rgb: [138, 154, 91] },
+      { name: 'Pistachio', rgb: [147, 197, 114] },
+      // Blues
+      { name: 'Blueberry', rgb: [79, 108, 176] },
+      { name: 'Cornflower', rgb: [100, 149, 237] },
+      { name: 'Hydrangea', rgb: [86, 130, 198] },
+      { name: 'Forget-me-not', rgb: [99, 183, 226] },
+      { name: 'Iris', rgb: [93, 63, 211] },
+      { name: 'Delphinium', rgb: [50, 74, 178] },
+      // Purples
+      { name: 'Lavender', rgb: [181, 126, 220] },
+      { name: 'Plum', rgb: [142, 69, 133] },
+      { name: 'Eggplant', rgb: [97, 64, 81] },
+      { name: 'Grape', rgb: [111, 45, 168] },
+      { name: 'Orchid', rgb: [218, 112, 214] },
+      { name: 'Lilac', rgb: [200, 162, 200] },
+      { name: 'Wisteria', rgb: [150, 110, 188] },
+      { name: 'Boysenberry', rgb: [135, 50, 96] },
+      // Pinks
+      { name: 'Peony', rgb: [255, 145, 164] },
+      { name: 'Carnation', rgb: [255, 166, 201] },
+      { name: 'Tulip', rgb: [255, 135, 141] },
+      { name: 'Flamingo Lily', rgb: [234, 134, 133] },
+      { name: 'Azalea', rgb: [255, 111, 150] },
+      // Browns / Earthy
+      { name: 'Cinnamon', rgb: [210, 105, 30] },
+      { name: 'Walnut', rgb: [121, 79, 45] },
+      { name: 'Cocoa', rgb: [110, 59, 38] },
+      { name: 'Mushroom', rgb: [186, 158, 136] },
+      { name: 'Acorn', rgb: [145, 97, 42] },
+      { name: 'Chestnut', rgb: [149, 69, 53] },
+      // Neutrals
+      { name: 'Coconut', rgb: [255, 253, 244] },
+      { name: 'Cotton', rgb: [242, 240, 235] },
+      { name: 'Jasmine', rgb: [248, 222, 126] },
+      { name: 'Gardenia', rgb: [255, 253, 230] },
+      { name: 'Charcoal Root', rgb: [54, 56, 62] },
+      { name: 'Blackberry', rgb: [43, 29, 53] },
+    ];
+
+    function closestNatureName(targetRgb) {
+      let best = null, bestDist = Infinity;
+      for (const entry of NATURE_COLORS) {
+        const dr = targetRgb[0] - entry.rgb[0];
+        const dg = targetRgb[1] - entry.rgb[1];
+        const db = targetRgb[2] - entry.rgb[2];
+        const dist = dr*dr + dg*dg + db*db;
+        if (dist < bestDist) { bestDist = dist; best = entry; }
+      }
+      return best.name;
+    }
+
     // Paint colors for the canvas animation
     const PAINT_RGB = {
       r: [214, 48, 49],
@@ -688,16 +777,20 @@
         document.getElementById('ansRV-y').textContent = targetY;
         document.getElementById('ansRV-b').textContent = targetB;
 
+        const natureName = closestNatureName(targetRgb);
+
         if (won) {
           answerRow.classList.add('win');
           document.getElementById('endMessage').innerHTML =
             `<span style="color:#538d4e; font-size:1.3rem; font-weight:800;">Perfect Match!</span><br>` +
-            `<span style="color:#8a8a8c; font-size:0.85rem;">You nailed it in ${guessCount} guess${guessCount > 1 ? 'es' : ''}!</span>`;
+            `<span style="color:#8a8a8c; font-size:0.85rem;">You nailed it in ${guessCount} guess${guessCount > 1 ? 'es' : ''}!</span><br>` +
+            `<span style="color:#bbb; font-size:0.85rem; font-style:italic;">The color was <strong>${natureName}</strong></span>`;
         } else {
           answerRow.style.borderColor = '#e74c3c';
           document.getElementById('endMessage').innerHTML =
             `<span style="color:#e74c3c; font-size:1.3rem; font-weight:800;">Not Quite</span><br>` +
-            `<span style="color:#8a8a8c; font-size:0.85rem;">Here's the answer</span>`;
+            `<span style="color:#8a8a8c; font-size:0.85rem;">Here's the answer</span><br>` +
+            `<span style="color:#bbb; font-size:0.85rem; font-style:italic;">The color was <strong>${natureName}</strong></span>`;
         }
       }, 600);
     }
